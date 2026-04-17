@@ -1,47 +1,43 @@
-import { HttpErrorResponse } from "@angular/common/http";
-import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
-import { ActivatedRoute, Router } from "@angular/router";
-import { ToastrService } from "ngx-toastr";
-import { ApiService } from "src/app/core/services/api.service";
-import * as ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import { ApiService } from 'src/app/core/services/api.service';
+import * as ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import {
   NgbDate,
   NgbDatepickerNavigateEvent,
   NgbDateStruct,
   NgbModal,
   NgbModalRef,
-} from "@ng-bootstrap/ng-bootstrap";
-import {
-  currentDate,
-  getFormatedDate,
-  time24to12,
-} from "src/app/util/date.util";
-import { EcommerceService } from "src/app/pages/ecommerce/ecommerce.service";
-import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
-import { forkJoin, of } from "rxjs";
-import { searchHits } from "./searchhits";
-import { environment } from "src/environments/environment";
-import { NgxSpinnerService } from "ngx-spinner";
-import { AuthenticationService } from "src/app/core/services/auth.service";
-import { DeleteModalComponent } from "src/app/pages/consultation/modals/delete-modal/delete-modal.component";
-import { ConsultationService } from "src/app/pages/consultation/consultation.service";
-import { PdfService } from "src/app/core/services/pdf.service";
-import { DomSanitizer } from "@angular/platform-browser";
-import { ViewPrescriptionComponent } from "../view-prescription/view-prescription.component";
-import { ViewMedicalRecordComponent } from "../view-medical-record/view-medical-record.component";
+} from '@ng-bootstrap/ng-bootstrap';
+import { currentDate, getFormatedDate, time24to12 } from 'src/app/util/date.util';
+import { EcommerceService } from 'src/app/pages/ecommerce/ecommerce.service';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { searchHits } from './searchhits';
+import { environment } from 'src/environments/environment';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { AuthenticationService } from 'src/app/core/services/auth.service';
+import { DeleteModalComponent } from 'src/app/pages/consultation/modals/delete-modal/delete-modal.component';
+import { ConsultationService } from 'src/app/pages/consultation/consultation.service';
+import { PdfService } from 'src/app/core/services/pdf.service';
+import { DomSanitizer } from '@angular/platform-browser';
+import { ViewPrescriptionComponent } from '../view-prescription/view-prescription.component';
+import { ViewMedicalRecordComponent } from '../view-medical-record/view-medical-record.component';
 
 @Component({
   standalone: false,
-  selector: "app-view-appointment",
-  templateUrl: "./view-appointment.component.html",
-  styleUrls: ["./view-appointment.component.scss"],
+  selector: 'app-view-appointment',
+  templateUrl: './view-appointment.component.html',
+  styleUrls: ['./view-appointment.component.scss'],
 })
 export class ViewAppointmentComponent implements OnInit {
-  @ViewChild("scheduleModal") scheduleModal: ElementRef;
-  @ViewChild("variationModal") variationModal: ElementRef;
-  @ViewChild("medicalRecordModal") medicalRecordModal: ElementRef;
-  @ViewChild("prescriptionModal") prescriptionModal: ElementRef;
-  @ViewChild("medicalAttachmentModal") medicalAttachmentModal: ElementRef;
+  @ViewChild('scheduleModal') scheduleModal: ElementRef;
+  @ViewChild('variationModal') variationModal: ElementRef;
+  @ViewChild('medicalRecordModal') medicalRecordModal: ElementRef;
+  @ViewChild('prescriptionModal') prescriptionModal: ElementRef;
+  @ViewChild('medicalAttachmentModal') medicalAttachmentModal: ElementRef;
   @ViewChild(ViewPrescriptionComponent) viewPrescriptionElem: ViewPrescriptionComponent;
   @ViewChild(ViewMedicalRecordComponent) viewMedicalRecordElem: ViewMedicalRecordComponent;
 
@@ -50,10 +46,7 @@ export class ViewAppointmentComponent implements OnInit {
   isConsultant: boolean;
   consultantId: string;
   imageUrl = environment.imageUrl;
-  breadCrumbItems = [
-    { label: "Appointments" },
-    { label: "Appointment", active: true },
-  ];
+  breadCrumbItems = [{ label: 'Appointments' }, { label: 'Appointment', active: true }];
   activeTab = 1;
   apptData;
   followUps: any[] = [];
@@ -90,7 +83,7 @@ export class ViewAppointmentComponent implements OnInit {
     'USG Abdomen',
     'ECG',
     'ECHO',
-    'EGG'
+    'EGG',
   ];
   history = [
     'Hyper Tension',
@@ -104,9 +97,8 @@ export class ViewAppointmentComponent implements OnInit {
     'Other',
   ];
 
-
-  timings = ["Morning", "Afternoon", "Evening", "Night"];
-  takeDosage = ["Before Meal", "With Meal", "After Meal", "SOS", "None"];
+  timings = ['Morning', 'Afternoon', 'Evening', 'Night'];
+  takeDosage = ['Before Meal', 'With Meal', 'After Meal', 'SOS', 'None'];
   debouncer: any;
   prescriptionModalData: any;
 
@@ -115,19 +107,19 @@ export class ViewAppointmentComponent implements OnInit {
   prescriptionList = [];
   medicalRecordList = [];
 
-  activeModalData: { type: "reschedule" | "followUp"; apptId: string } = {
-    type: "reschedule",
-    apptId: "",
+  activeModalData: { type: 'reschedule' | 'followUp'; apptId: string } = {
+    type: 'reschedule',
+    apptId: '',
   };
   modalData = {
     reschedule: {
-      title: "Reschedule Apptointment",
+      title: 'Reschedule Apptointment',
     },
     followUp: {
-      title: "Create Follow Up",
+      title: 'Create Follow Up',
     },
     status: {
-      title: "Update Status",
+      title: 'Update Status',
     },
   };
   currentDate = currentDate();
@@ -144,28 +136,28 @@ export class ViewAppointmentComponent implements OnInit {
     pres: false,
   };
   form = this.fb.group({
-    title: ["", Validators.required],
-    chiefComplaints: [""],
-    examination: [""],
-    treatment: [""],
+    title: ['', Validators.required],
+    chiefComplaints: [''],
+    examination: [''],
+    treatment: [''],
     investigations: this.fb.array(this.investigations.map((_) => !1)),
     pastHistory: this.fb.array(this.history.map((_) => !1)),
-    otherPastHistory: [""],
-    appetite: [""],
-    vitals: this.fb.array(this.vitals.map((_) => "")),
+    otherPastHistory: [''],
+    appetite: [''],
+    vitals: this.fb.array(this.vitals.map((_) => '')),
     medicines: this.fb.array([this.createMedicineFG()]),
-    note: [""],
+    note: [''],
   });
 
   apptScheduleForm = this.fb.group({
     date: [this.minDate, Validators.required],
-    primaryTimeSlot: ["", Validators.required],
+    primaryTimeSlot: ['', Validators.required],
   });
 
   recordForm = this.fb.group({
     date: [currentDate(), Validators.required],
-    description: [""],
-    attachment: ["", Validators.required],
+    description: [''],
+    attachment: ['', Validators.required],
   });
 
   appointmentId: string;
@@ -174,13 +166,13 @@ export class ViewAppointmentComponent implements OnInit {
   pagination = {
     prescription: {
       page: 1,
-      limit: 10
+      limit: 10,
     },
     records: {
       page: 1,
-      limit: 10
-    }
-  }
+      limit: 10,
+    },
+  };
   page = 1;
   limit = 10;
 
@@ -189,12 +181,12 @@ export class ViewAppointmentComponent implements OnInit {
     month: null,
     timeSlots: [],
   };
-  selectedTimeSlot = { date: "", slots: [] };
+  selectedTimeSlot = { date: '', slots: [] };
 
   showDropdown: boolean = false;
 
-  currentOpenedAttachment: any = "";
-  currentOpenedAttachmentType: any = "";
+  currentOpenedAttachment: any = '';
+  currentOpenedAttachmentType: any = '';
   showImageBlock = true;
   callDetails = {};
 
@@ -212,13 +204,14 @@ export class ViewAppointmentComponent implements OnInit {
     private pdf: PdfService,
     private sanitizer: DomSanitizer,
     private toaster: ToastrService,
-  ) { }
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.isAdmin = this.authService.currentUser().role.includes('Admin');
     this.isConsultant = this.authService.currentUser().role.includes('Consultant');
 
-    if (this.route.snapshot.queryParams.view == "followUp") {
+    if (this.route.snapshot.queryParams.view == 'followUp') {
       this.activeTab = 2;
     }
     this.route.params.subscribe((res: any) => {
@@ -234,9 +227,7 @@ export class ViewAppointmentComponent implements OnInit {
     this.spinner.show();
     forkJoin([
       this.apiService.get(`appointments/detail?_id=${this.appointmentId}`),
-      this.apiService.get(
-        `appointments/followups?parentAppointmentId=${this.appointmentId}`
-      ),
+      this.apiService.get(`appointments/followups?parentAppointmentId=${this.appointmentId}`),
     ]).subscribe(
       (res: any) => {
         this.spinner.hide();
@@ -245,17 +236,18 @@ export class ViewAppointmentComponent implements OnInit {
           this.consultantId = data.consultantId?._id;
           this.apptData = data;
           this.followUps = res[1].data.appointments;
+          this.cdr.markForCheck();
         } else {
-          this.toastr.error("Appointment not found!");
-          this.router.navigate(["/consultation/appointment"], {
+          this.toastr.error('Appointment not found!');
+          this.router.navigate(['/consultation/appointment'], {
             replaceUrl: true,
           });
         }
       },
       (err: HttpErrorResponse) => {
         this.spinner.hide();
-        this.toastr.error(err.error?.message || "Something went wrong");
-      }
+        this.toastr.error(err.error?.message || 'Something went wrong');
+      },
     );
   }
   getPrescriptions() {
@@ -266,37 +258,34 @@ export class ViewAppointmentComponent implements OnInit {
       limit,
     };
 
-    this.consultationService.getAppointmentPrescriptionList(params)
-      .subscribe(
-        (res: any) => {
-          this.prescriptionsCount = res.count;
-          this.prescriptionList = [...this.prescriptionList, ...res.data];
-        },
-        (err: HttpErrorResponse) => {
-          console.log("err", err);
-        }
-      );
+    this.consultationService.getAppointmentPrescriptionList(params).subscribe(
+      (res: any) => {
+        this.prescriptionsCount = res.count;
+        this.prescriptionList = [...this.prescriptionList, ...res.data];
+      },
+      (err: HttpErrorResponse) => {
+        console.log('err', err);
+      },
+    );
   }
 
   loadMorePrescription() {
     this.pagination.prescription.page++;
-    this.getPrescriptions()
+    this.getPrescriptions();
   }
 
   getMedicalRecords() {
-    let { page, limit } = this.pagination.records
+    let { page, limit } = this.pagination.records;
     this.apiService
-      .get(
-        `medicalrecords?appointmentId=${this.appointmentId}&page=${page}&limit=${limit}`
-      )
+      .get(`medicalrecords?appointmentId=${this.appointmentId}&page=${page}&limit=${limit}`)
       .subscribe(
         (res: any) => {
           this.medicalRecordsCount = res.count;
           this.medicalRecordList = [...this.medicalRecordList, ...res.data];
         },
         (err: HttpErrorResponse) => {
-          console.log("err", err);
-        }
+          console.log('err', err);
+        },
       );
   }
 
@@ -324,7 +313,7 @@ export class ViewAppointmentComponent implements OnInit {
       data: this.selectedProduct,
       qty: this.qty,
     });
-    modal.dismiss("Cross click");
+    modal.dismiss('Cross click');
     console.log(this.selectedMedicineFG);
   }
 
@@ -333,7 +322,9 @@ export class ViewAppointmentComponent implements OnInit {
   }
 
   openModal(content: any, type: 'reschedule' | 'followUp', appt): void {
-    let followUp = this.followUps.find(el => el.status == 'Confirmed' || el.status == 'Re-scheduled');
+    let followUp = this.followUps.find(
+      (el) => el.status == 'Confirmed' || el.status == 'Re-scheduled',
+    );
 
     if (type == 'followUp' && appt.status != 'Completed') {
       this.toastr.info('Please mark completed the appointment first');
@@ -344,12 +335,11 @@ export class ViewAppointmentComponent implements OnInit {
       return;
     }
     this.activeModalData = { type, apptId: appt._id };
-    this.openModalRef = this.modalService.open(content, { windowClass: "modal-holder" });
+    this.openModalRef = this.modalService.open(content, { windowClass: 'modal-holder' });
     let { year, month, day } = this.apptScheduleForm.value.date as any;
 
     this.getAvailableSlots(
-      `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day
-      }`
+      `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`,
     );
   }
 
@@ -362,9 +352,9 @@ export class ViewAppointmentComponent implements OnInit {
   // }
 
   onDateSelect(date: NgbDate) {
-    console.log("DATE", date);
+    console.log('DATE', date);
     this.apptScheduleForm.patchValue({ date: date });
-    let { year, month, day } = this.apptScheduleForm.value.date
+    let { year, month, day } = this.apptScheduleForm.value.date;
     let newDate: any = `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
     this.getAvailableSlots(newDate);
     // this.setSelectedDateSlots()
@@ -381,29 +371,29 @@ export class ViewAppointmentComponent implements OnInit {
       // endDate
     };
 
-    console.log("startDate", startDate);
+    console.log('startDate', startDate);
 
     this.spinner.show();
     forkJoin([
-      this.apiService.get("users/timeslots", queryParams),
-      this.apiService.get("users/unavailableslot", {
+      this.apiService.get('users/timeslots', queryParams),
+      this.apiService.get('users/unavailableslot', {
         consultantId: this.consultantId,
       }),
     ]).subscribe(
       (res: any) => {
         this.spinner.hide();
-        console.log("res", res);
+        console.log('res', res);
         let { slots } = res[0].data;
         let unavailableSlots = res[1].data;
 
         unavailableSlots = unavailableSlots.filter(
-          (slot) => startDate == getFormatedDate(slot.date)
+          (slot) => startDate == getFormatedDate(slot.date),
         );
 
         if (unavailableSlots.length) {
           slots = slots.map((slot) => {
             slot.available = !unavailableSlots.find(
-              (uaSlot) => uaSlot.slot == slot.startTime + " - " + slot.endTime
+              (uaSlot) => uaSlot.slot == slot.startTime + ' - ' + slot.endTime,
             );
             return slot;
           });
@@ -415,44 +405,40 @@ export class ViewAppointmentComponent implements OnInit {
 
         if (startDate == getFormatedDate(date)) {
           slots = slots.filter((el: any) => {
-            let startTimeArr = el.startTime
-              .split(":")
-              .map((el) => parseInt(el));
+            let startTimeArr = el.startTime.split(':').map((el) => parseInt(el));
             let [h, m] = startTimeArr;
-            return (
-              h * 60 + m >
-              date.getHours() * 60 + date.getMinutes() + bookingTimeGap
-            );
+            return h * 60 + m > date.getHours() * 60 + date.getMinutes() + bookingTimeGap;
           });
         }
 
         this.selectedTimeSlot.slots = slots;
-        console.log("slot", slots);
+        console.log('slot', slots);
         // this.setSelectedDateSlots();
       },
       (err: HttpErrorResponse) => {
         this.spinner.hide();
-        this.toaster.error(err?.error?.message || "Something went wrong");
-      }
+        this.toaster.error(err?.error?.message || 'Something went wrong');
+      },
     );
   }
 
   setSelectedDateSlots() {
     let { year, month, day } = this.apptScheduleForm.value.date;
-    console.log("[selected date]", this.apptScheduleForm.value.date);
+    console.log('[selected date]', this.apptScheduleForm.value.date);
 
-    console.log("slotData", this.slotsData);
+    console.log('slotData', this.slotsData);
 
     let timeSlot = this.slotsData.timeSlots.find((el) => {
-      let selectedDate = `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day
-        }`;
+      let selectedDate = `${year}-${month < 10 ? '0' + month : month}-${
+        day < 10 ? '0' + day : day
+      }`;
       return getFormatedDate(selectedDate) == getFormatedDate(el.date);
     });
 
     // let date:any = this.apptScheduleForm.value.date.year-this.apptScheduleForm.value.date.month-this.apptScheduleForm.value.date.day;
     // this.getAvailableSlots(date);
 
-    console.log("timeSlot", timeSlot);
+    console.log('timeSlot', timeSlot);
 
     if (timeSlot) {
       this.selectedTimeSlot = timeSlot;
@@ -463,117 +449,122 @@ export class ViewAppointmentComponent implements OnInit {
 
   handleAttpScheduleError(err: HttpErrorResponse, timeSlot: string) {
     this.spinner.hide();
-    if (err.error?.message?.toLowerCase() == "slot not available") {
-      this.toastr.error("Please choose other slot", "Slot not available!");
+    if (err.error?.message?.toLowerCase() == 'slot not available') {
+      this.toastr.error('Please choose other slot', 'Slot not available!');
       let index = this.selectedTimeSlot.slots.findIndex(
-        (slot) => slot.startTime + " - " + slot.endTime == timeSlot
+        (slot) => slot.startTime + ' - ' + slot.endTime == timeSlot,
       );
       this.selectedTimeSlot.slots.splice(index, 1);
     } else {
-      this.toastr.error(err.error?.message || "Something went wrong");
+      this.toastr.error(err.error?.message || 'Something went wrong');
     }
   }
 
   onSubmitAttpSchedule() {
     let { date, primaryTimeSlot } = this.apptScheduleForm.value;
-    if (this.activeModalData.type == "reschedule") {
+    if (this.activeModalData.type == 'reschedule') {
       let data = {
         _id: this.activeModalData.apptId,
         date: `${date.year}-${date.month < 10 ? '0' + date.month : date.month}-${date.day < 10 ? '0' + date.day : date.day}`,
         primaryTimeSlot,
       };
       this.spinner.show();
-      this.apiService.post("appointments/reschedule", data).subscribe(
+      this.apiService.post('appointments/reschedule', data).subscribe(
         (res: any) => {
           this.spinner.hide();
-          this.toastr.success("Appointment rescheduled successfully");
+          this.toastr.success('Appointment rescheduled successfully');
           this.openModalRef.close();
           this.getDetails();
         },
         (err: HttpErrorResponse) => {
           this.handleAttpScheduleError(err, primaryTimeSlot);
           this.getDetails();
-        }
+        },
       );
-    } else if (this.activeModalData.type == "followUp") {
+    } else if (this.activeModalData.type == 'followUp') {
       let data = {
         consultantId: this.consultantId,
         parentAppointmentId: this.activeModalData.apptId,
         date: `${date.year}-${date.month < 10 ? '0' + date.month : date.month}-${date.day < 10 ? '0' + date.day : date.day}`,
         primaryTimeSlot,
         fee: this.apptData.consultantId.fee,
-        paymentCallbackUrl: environment.userAppHost + "payments",
+        paymentCallbackUrl: environment.userAppHost + 'payments',
       };
       this.spinner.show();
-      this.apiService.post("appointments/followup", data).subscribe(
+      this.apiService.post('appointments/followup', data).subscribe(
         (res: any) => {
           this.spinner.hide();
-          this.toastr.success("Follow-up created successfully");
+          this.toastr.success('Follow-up created successfully');
           this.openModalRef.close();
           this.getDetails();
         },
         (err: HttpErrorResponse) => {
           this.handleAttpScheduleError(err, primaryTimeSlot);
-        }
+        },
       );
     }
   }
 
   markCompleted(_id, isFollowUp = false) {
-    let check = confirm('Are you sure you want to mark this appointment as completed?')
+    let check = confirm('Are you sure you want to mark this appointment as completed?');
     if (check) {
       let data = {
         _id,
         status: 'Completed',
       };
-      this.spinner.show()
-      this.apiService.put('appointments', data).subscribe((res: any) => {
-        this.spinner.hide();
-        this.toastr.success('Status updated successfully')
-        this.getDetails();
-
-      }, (err: HttpErrorResponse) => {
-        this.spinner.hide()
-        this.toastr.error(err.error.message || 'Something went wrong!')
-      })
-
+      this.spinner.show();
+      this.apiService.put('appointments', data).subscribe(
+        (res: any) => {
+          this.spinner.hide();
+          this.toastr.success('Status updated successfully');
+          this.getDetails();
+        },
+        (err: HttpErrorResponse) => {
+          this.spinner.hide();
+          this.toastr.error(err.error.message || 'Something went wrong!');
+        },
+      );
     }
   }
 
   markClosed(_id, isFollowUp = false) {
     if (!isFollowUp) {
-      let appt = this.followUps.find(el => el.status == 'Confirmed' || el.status == 'Re-scheduled');
+      let appt = this.followUps.find(
+        (el) => el.status == 'Confirmed' || el.status == 'Re-scheduled',
+      );
       if (appt) {
         this.toastr.warning('Please mark completed the Follow Up first');
         this.activeTab = 2;
         return;
       }
     }
-    let check = confirm('Are you sure you want to mark this appointment as closed? You will not be able to create a follow-up for the same appointment.')
+    let check = confirm(
+      'Are you sure you want to mark this appointment as closed? You will not be able to create a follow-up for the same appointment.',
+    );
     if (check) {
       let data = {
         _id,
         status: 'Closed',
       };
       this.spinner.show();
-      this.apiService.put("appointments", data).subscribe(
+      this.apiService.put('appointments', data).subscribe(
         (res: any) => {
           this.spinner.hide();
-          this.toastr.success("Status updated successfully");
+          this.toastr.success('Status updated successfully');
           this.getDetails();
         },
         (err: HttpErrorResponse) => {
           this.spinner.hide();
-          this.toastr.error(err.error.message || "Something went wrong!");
-        }
+          this.toastr.error(err.error.message || 'Something went wrong!');
+        },
       );
     }
   }
 
   openVariationModal() {
     this.openModalRef = this.modalService.open(this.variationModal, {
-      size: "lg",
-      windowClass: "modal-holder",
+      size: 'lg',
+      windowClass: 'modal-holder',
       centered: true,
     });
   }
@@ -632,12 +623,10 @@ export class ViewAppointmentComponent implements OnInit {
       //   el.selectedIndex = 0;
       // });
 
-      if (product.variationsStructureType == "group") {
+      if (product.variationsStructureType == 'group') {
         var group = product.variations[0];
       } else {
-        group = product.variations.find((el) =>
-          this.checkIsSameGroup(selectedValue, el.label)
-        );
+        group = product.variations.find((el) => this.checkIsSameGroup(selectedValue, el.label));
       }
       product.selectedVariation = group;
       product = {
@@ -659,12 +648,10 @@ export class ViewAppointmentComponent implements OnInit {
       el.title = [];
       el.label.forEach((label) => {
         product.mainVariations.forEach((mVariation) => {
-          if (typeof mVariation.variationId != "object")
-            console.error(
-              "Custom Error: Cannot read property 'title' of variationId"
-            );
+          if (typeof mVariation.variationId != 'object')
+            console.error("Custom Error: Cannot read property 'title' of variationId");
           if (mVariation.values.includes(label)) {
-            el.title.push(mVariation.variationId.title || "Unknown");
+            el.title.push(mVariation.variationId.title || 'Unknown');
           }
         });
       });
@@ -672,7 +659,7 @@ export class ViewAppointmentComponent implements OnInit {
   }
 
   changeQty(type) {
-    if (type == "plus") {
+    if (type == 'plus') {
       this.qty += 1;
     } else {
       if (this.qty == 1) return;
@@ -682,7 +669,7 @@ export class ViewAppointmentComponent implements OnInit {
 
   selectVariation(product, variation, index?) {
     let selectedVariation;
-    if (product.variationsStructureType == "group") {
+    if (product.variationsStructureType == 'group') {
       product.variations.forEach((el) => {
         el.isSelected = false;
       });
@@ -696,7 +683,7 @@ export class ViewAppointmentComponent implements OnInit {
       });
 
       selectedVariation = product.variations.find((el) =>
-        this.checkIsSameGroup(selectedValues, el.label)
+        this.checkIsSameGroup(selectedValues, el.label),
       );
     }
 
@@ -726,45 +713,46 @@ export class ViewAppointmentComponent implements OnInit {
 
       // collect existing custom items to preserve them across searches
       const existingCustom = (this.productList || []).filter(
-        (p) => p && p._id && typeof p._id === 'string' && p._id.startsWith('customvalue_')
+        (p) => p && p._id && typeof p._id === 'string' && p._id.startsWith('customvalue_'),
       );
 
       if (value) {
         if (typeof idx === 'number' && idx >= 0) {
           const id = makeCustomId(idx);
-          const customItem = { _id: id, name: value, brandId: { name: "--" } } as any;
+          const customItem = { _id: id, name: value, brandId: { name: '--' } } as any;
           // ensure the current custom item is present/upserted in productList front
           const otherCustom = existingCustom.filter((c) => c._id !== id);
 
           // call search API and then merge results with custom items
-          this.eService.algoliaSearch(value)
-            .subscribe(
-              (res) => {
-                if (res.success) {
-                  let hits = [...res.data1.hits];
-                  // remove any duplicate of current custom id from hits
-                  hits = hits.filter((h) => h._id !== id);
-                  this.productList = [customItem, ...hits, ...otherCustom];
-                }
-              },
-              (err) => {
-                // on error, still show the custom item plus other custom items
-                this.productList = [customItem, ...otherCustom];
+          this.eService.algoliaSearch(value).subscribe(
+            (res) => {
+              if (res.success) {
+                let hits = [...res.data1.hits];
+                // remove any duplicate of current custom id from hits
+                hits = hits.filter((h) => h._id !== id);
+                this.productList = [customItem, ...hits, ...otherCustom];
               }
-            );
+            },
+            (err) => {
+              // on error, still show the custom item plus other custom items
+              this.productList = [customItem, ...otherCustom];
+            },
+          );
         } else {
           // fallback: legacy single customvalue entry
           const customItem = { _id: 'customvalue', name: value, brandId: { name: '--' } } as any;
-          this.eService.algoliaSearch(value)
-            .subscribe((res) => {
+          this.eService.algoliaSearch(value).subscribe(
+            (res) => {
               if (res.success) {
                 let hits = [...res.data1.hits];
                 hits = hits.filter((h) => h._id !== 'customvalue');
                 this.productList = [customItem, ...hits];
               }
-            }, (err) => {
+            },
+            (err) => {
               this.productList = [customItem];
-            });
+            },
+          );
         }
       } else {
         // no value: remove per-row custom item if present
@@ -773,7 +761,11 @@ export class ViewAppointmentComponent implements OnInit {
           this.productList = (this.productList || []).filter((p) => p._id !== id);
         } else {
           // fallback remove the legacy first element if it was custom
-          if (this.productList && this.productList.length && this.productList[0]._id === 'customvalue') {
+          if (
+            this.productList &&
+            this.productList.length &&
+            this.productList[0]._id === 'customvalue'
+          ) {
             this.productList.shift();
           }
         }
@@ -787,7 +779,9 @@ export class ViewAppointmentComponent implements OnInit {
     console.log(event);
     if (event._id && (event._id + '').startsWith('customvalue')) {
       // set the display id in 'name' control so ng-select shows the value
-      try { formGroup.get('name').setValue(event._id); } catch (e) {}
+      try {
+        formGroup.get('name').setValue(event._id);
+      } catch (e) {}
       this.setProductValue(formGroup, {
         data: { _id: event._id, name: event.name },
       });
@@ -798,10 +792,9 @@ export class ViewAppointmentComponent implements OnInit {
     let product = JSON.parse(JSON.stringify(event));
     this.selectedProduct = product;
 
-    if (product.type == "Normal" && product.variations.length) {
+    if (product.type == 'Normal' && product.variations.length) {
       product.variations.sort(
-        (a, b) =>
-          (a.price.minPrice || a.price.mrp) - (b.price.minPrice || a.price.mrp)
+        (a, b) => (a.price.minPrice || a.price.mrp) - (b.price.minPrice || a.price.mrp),
       );
       let variation = product.variations[0];
       // product._id = variation.productId;
@@ -810,22 +803,19 @@ export class ViewAppointmentComponent implements OnInit {
       // product.slug = variation.slug;
     }
     if (product.mainVariations.length && product.variations.length) {
-      product.mainVariations = product.mainVariations.filter(
-        (el) => !!el.values.length
-      );
+      product.mainVariations = product.mainVariations.filter((el) => !!el.values.length);
       product.variations = product.variations.filter((el) => !!el.label.length);
       if (product.mainVariations.length && product.variations.length) {
         let maxGroupSize =
-          product.mainVariations
-            .map((el) => el.values.length)
-            .reduce((total, el) => total * el) || 0;
+          product.mainVariations.map((el) => el.values.length).reduce((total, el) => total * el) ||
+          0;
 
         this.addTitleInVariations(product);
 
         if (product.variations.length != maxGroupSize) {
-          product.variationsStructureType = "group";
+          product.variationsStructureType = 'group';
         } else {
-          product.variationsStructureType = "single";
+          product.variationsStructureType = 'single';
         }
 
         this.makeDefaultVariantsSelected(product);
@@ -833,33 +823,35 @@ export class ViewAppointmentComponent implements OnInit {
       }
     }
     // set the display id in 'name' control so ng-select shows the selected item
-    try { formGroup.get('name').setValue(event._id); } catch (e) {}
+    try {
+      formGroup.get('name').setValue(event._id);
+    } catch (e) {}
     this.setProductValue(formGroup, { data: this.selectedProduct, qty: 1 });
   }
 
   createMedicineFG(
-    name = "",
-    dosage = "",
-    days = "",
-    meal = "After Meal",
+    name = '',
+    dosage = '',
+    days = '',
+    meal = 'After Meal',
     time = this.timings.map((_) => !1),
-    repeat = "",
+    repeat = '',
     repeatAfterDays = 1,
   ) {
     return this.fb.group({
       name: [name, Validators.required],
-  product: [null, Validators.required],
+      product: [null, Validators.required],
       dosage: [dosage, Validators.required],
       days: [days, Validators.required],
       meal: [meal],
       time: this.fb.array(time),
       repeat: [repeat],
-      repeatAfterDays: [repeatAfterDays, [Validators.min(1)]]
+      repeatAfterDays: [repeatAfterDays, [Validators.min(1)]],
     });
   }
 
   get medicineFA() {
-    return <FormArray>this.form.get("medicines");
+    return <FormArray>this.form.get('medicines');
   }
 
   addMedicine() {
@@ -870,11 +862,8 @@ export class ViewAppointmentComponent implements OnInit {
     this.medicineFA.removeAt(i);
   }
 
-  setProductValue(
-    formGroup: FormGroup,
-    data: { data: any; qty?: number } | null
-  ) {
-    formGroup.get("product").setValue(data);
+  setProductValue(formGroup: FormGroup, data: { data: any; qty?: number } | null) {
+    formGroup.get('product').setValue(data);
   }
 
   convertToValue(key: string, value: any[]) {
@@ -882,25 +871,25 @@ export class ViewAppointmentComponent implements OnInit {
   }
 
   startWritingPres() {
-    let recentPres = this.prescriptionList[0]
+    let recentPres = this.prescriptionList[0];
     if (recentPres) {
       let { chiefComplaints, treatment, pastHistory, otherPastHistory } = recentPres;
 
       if (otherPastHistory) {
-        pastHistory = [...pastHistory, { name: "Other" }];
+        pastHistory = [...pastHistory, { name: 'Other' }];
         this.showOtherHistory = true;
       }
 
       let data = {
-        chiefComplaints: chiefComplaints || "",
-        treatment: treatment || "",
-        pastHistory: this.history.map((val) => pastHistory.find(val2 => val2.name == val)),
-        otherPastHistory: otherPastHistory || "",
-      }
+        chiefComplaints: chiefComplaints || '',
+        treatment: treatment || '',
+        pastHistory: this.history.map((val) => pastHistory.find((val2) => val2.name == val)),
+        otherPastHistory: otherPastHistory || '',
+      };
       this.form.patchValue(data);
     } else {
       this.form.patchValue({
-        treatment: this.apptData.userId?.diseases?.map(el => el.name).join(", ") || "",
+        treatment: this.apptData.userId?.diseases?.map((el) => el.name).join(', ') || '',
       });
     }
     this.writePrescription = true;
@@ -922,25 +911,25 @@ export class ViewAppointmentComponent implements OnInit {
     }
 
     let value = JSON.parse(JSON.stringify(this.form.value));
-    let investigations = this.convertToValue("investigations", value.investigations).map(el => {
-      return { name: el, value: true }
+    let investigations = this.convertToValue('investigations', value.investigations).map((el) => {
+      return { name: el, value: true };
     });
-    let pastHistory = this.convertToValue("history", value.pastHistory);
+    let pastHistory = this.convertToValue('history', value.pastHistory);
     let otherHistory = pastHistory.indexOf('Other');
     if (otherHistory != -1) {
       pastHistory.splice(otherHistory, 1);
     }
-    pastHistory = pastHistory.map(el => {
-      return { name: el, value: true }
-    })
+    pastHistory = pastHistory.map((el) => {
+      return { name: el, value: true };
+    });
 
     value.vitals = value.vitals.map((val, i) => {
-      val = (val || "").trim()
+      val = (val || '').trim();
       return { ...this.vitals[i], value: val };
     });
 
     value.medicines = value.medicines.map((medicine) => {
-      medicine.time = this.convertToValue("timings", medicine.time);
+      medicine.time = this.convertToValue('timings', medicine.time);
       let { product } = medicine;
       // product may contain per-row custom ids like 'customvalue_2', 'customvalue_3',
       // treat any id that starts with 'customvalue' as a custom entry (no medicineId)
@@ -954,9 +943,9 @@ export class ViewAppointmentComponent implements OnInit {
         medicine.name = product.data.name;
         medicine.qty = product.qty;
       }
-      medicine.days = medicine.days ? parseInt(medicine.days, 10) : "";
+      medicine.days = medicine.days ? parseInt(medicine.days, 10) : '';
       medicine.repeat = medicine.repeat || 'Daily';
-      medicine.meal = medicine.meal == "None" ? "" : medicine.meal;
+      medicine.meal = medicine.meal == 'None' ? '' : medicine.meal;
       delete medicine.product;
       return medicine;
     });
@@ -979,9 +968,9 @@ export class ViewAppointmentComponent implements OnInit {
     console.log(data, JSON.stringify(data));
 
     this.spinner.show();
-    this.apiService.post("prescriptions", data).subscribe(
+    this.apiService.post('prescriptions', data).subscribe(
       (res: any) => {
-        console.log("res", res);
+        console.log('res', res);
         this.writePrescription = false;
         this.clearPrescription();
         this.spinner.hide();
@@ -991,15 +980,15 @@ export class ViewAppointmentComponent implements OnInit {
       },
       (err: HttpErrorResponse) => {
         this.spinner.hide();
-        this.toaster.error(err.error.message || "Something went wrong!");
-      }
+        this.toaster.error(err.error.message || 'Something went wrong!');
+      },
     );
   }
 
   addMedicalRecord() {
     this.openModalRef = this.modalService.open(this.medicalRecordModal, {
-      size: "lg",
-      windowClass: "modal-holder",
+      size: 'lg',
+      windowClass: 'modal-holder',
       centered: true,
     });
   }
@@ -1009,95 +998,94 @@ export class ViewAppointmentComponent implements OnInit {
     let file: File = target.files[0];
 
     if (file) {
-      if (!["application/pdf", "image/png", "image/jpeg"].includes(file.type)) {
-        this.recordForm.patchValue({ attachment: "" });
-        target.value = "";
+      if (!['application/pdf', 'image/png', 'image/jpeg'].includes(file.type)) {
+        this.recordForm.patchValue({ attachment: '' });
+        target.value = '';
         return;
       }
       this.recordForm.patchValue({ attachment: file as any });
     } else {
-      this.recordForm.patchValue({ attachment: "" });
+      this.recordForm.patchValue({ attachment: '' });
     }
   }
 
   onBlurAttachment() {
-    this.recordForm.get("attachment").markAsTouched();
+    this.recordForm.get('attachment').markAsTouched();
   }
 
   onSubmitMedicalRecord() {
     console.log(this.recordForm);
     this.spinner.show();
     let { value } = this.recordForm;
-    this.apiService
-      .fileUpload([this.recordForm.value.attachment as any], "")
-      .subscribe(
-        (res: any) => {
-          console.log("res", res);
-          const data = {
-            appointmentId: this.appointmentId,
-            userId: this.apptData.userId,
-            description: value.description,
-            attachment: res.data[0],
-            dateTime: value.date,
-            by: "Doctor",
-          };
-          console.log("data", data);
-          this.apiService.post(`medicalrecords`, data).subscribe(
-            (res: any) => {
-              this.pagination.records.page = 1;
-              this.medicalRecordList = [];
-              this.getMedicalRecords();
-              this.spinner.hide();
-              this.modalService.dismissAll();
-            },
-            (err: HttpErrorResponse) => {
-              console.log("error", err);
-            }
-          );
-        },
-        (err: HttpErrorResponse) => {
-          this.spinner.hide();
-          this.toaster.error(err.error.message || "Something went wrong");
-          console.log("err", err);
-        }
-      );
+    this.apiService.fileUpload([this.recordForm.value.attachment as any], '').subscribe(
+      (res: any) => {
+        console.log('res', res);
+        const data = {
+          appointmentId: this.appointmentId,
+          userId: this.apptData.userId,
+          description: value.description,
+          attachment: res.data[0],
+          dateTime: value.date,
+          by: 'Doctor',
+        };
+        console.log('data', data);
+        this.apiService.post(`medicalrecords`, data).subscribe(
+          (res: any) => {
+            this.pagination.records.page = 1;
+            this.medicalRecordList = [];
+            this.getMedicalRecords();
+            this.spinner.hide();
+            this.modalService.dismissAll();
+          },
+          (err: HttpErrorResponse) => {
+            console.log('error', err);
+          },
+        );
+      },
+      (err: HttpErrorResponse) => {
+        this.spinner.hide();
+        this.toaster.error(err.error.message || 'Something went wrong');
+        console.log('err', err);
+      },
+    );
   }
 
   viewPrescription(prescription) {
     console.log(this.viewPrescriptionElem);
     if (this.viewPrescriptionElem) {
-      this.viewPrescriptionElem.viewPrescription(prescription._id)
+      this.viewPrescriptionElem.viewPrescription(prescription._id);
     }
     return;
     this.spinner.show();
-    this.consultationService.getPrescriptionDetails(prescription._id)
-      .subscribe(
-        (res: any) => {
-          this.spinner.hide();
-          if (res.data) {
-            let { DOB } = res.data.userId
-            if (DOB) {
-              try {
-                let dob = new Date(DOB);
-                let current = new Date();
+    this.consultationService.getPrescriptionDetails(prescription._id).subscribe(
+      (res: any) => {
+        this.spinner.hide();
+        if (res.data) {
+          let { DOB } = res.data.userId;
+          if (DOB) {
+            try {
+              let dob = new Date(DOB);
+              let current = new Date();
 
-                res.data.userId.DOBYear = current.getFullYear() - dob.getFullYear()
-                res.data.userId.DOBMonth = current.getMonth() - dob.getMonth()
-              } catch (e) { }
-            }
-            // this.prescriptionModalData = res.data;
-            this.prescriptionModalData = { prescriptionHtml: this.sanitizer.bypassSecurityTrustHtml(res.prescriptionHtml) };
+              res.data.userId.DOBYear = current.getFullYear() - dob.getFullYear();
+              res.data.userId.DOBMonth = current.getMonth() - dob.getMonth();
+            } catch (e) {}
           }
-        },
-        (err: HttpErrorResponse) => {
-          this.spinner.hide();
-          this.toaster.error(err.error?.message || "Something went wrong!");
+          // this.prescriptionModalData = res.data;
+          this.prescriptionModalData = {
+            prescriptionHtml: this.sanitizer.bypassSecurityTrustHtml(res.prescriptionHtml),
+          };
         }
-      );
+      },
+      (err: HttpErrorResponse) => {
+        this.spinner.hide();
+        this.toaster.error(err.error?.message || 'Something went wrong!');
+      },
+    );
 
     this.openModalRef = this.modalService.open(this.prescriptionModal, {
-      size: "xl",
-      windowClass: "modal-holder",
+      size: 'xl',
+      windowClass: 'modal-holder',
       centered: true,
     });
   }
@@ -1110,71 +1098,71 @@ export class ViewAppointmentComponent implements OnInit {
     this.showDropdown = false;
 
     const modalRef = this.modalService.open(DeleteModalComponent, {
-      size: "lg",
+      size: 'lg',
     });
 
-    modalRef.componentInstance.data = "cancelAppointment";
+    modalRef.componentInstance.data = 'cancelAppointment';
 
     modalRef.result.then(
       (result) => {
-        if (result == "yes") {
+        if (result == 'yes') {
           this.spinner.show();
-          this.consultationService
-            .cancelAppointment({ _id: id })
-            .subscribe((res: any) => {
+          this.consultationService.cancelAppointment({ _id: id }).subscribe(
+            (res: any) => {
               this.spinner.hide();
               this.toaster.success(res.message);
               this.getDetails();
-            }, (err: HttpErrorResponse) => {
+            },
+            (err: HttpErrorResponse) => {
               let { error } = err;
               this.spinner.hide();
-              this.toaster.error(error?.message || "Something went wrong");
+              this.toaster.error(error?.message || 'Something went wrong');
               this.getDetails();
-            });
+            },
+          );
         }
       },
       (reason) => {
-        console.log("reason", reason);
-      }
+        console.log('reason', reason);
+      },
     );
   }
 
   downloadPrescription() {
     let { title, userId } = this.prescriptionModalData;
-    let username = "";
+    let username = '';
     if (userId) {
-      username = userId.firstName + " " + userId.lastName;
+      username = userId.firstName + ' ' + userId.lastName;
     }
     this.pdf.downloadPDF(
-      "#presCont",
-      `${title}-${username}-${getFormatedDate(new Date(), "DD-MM-YYYY")}`
+      '#presCont',
+      `${title}-${username}-${getFormatedDate(new Date(), 'DD-MM-YYYY')}`,
     );
   }
 
   viewImage(data) {
-    this.viewMedicalRecordElem.viewRecord(data)
+    this.viewMedicalRecordElem.viewRecord(data);
     return;
     this.currentOpenedAttachment = data;
 
     let fileType: any;
-    fileType = this.currentOpenedAttachment.split(".");
+    fileType = this.currentOpenedAttachment.split('.');
     this.currentOpenedAttachmentType = fileType[1];
     if (
-      this.currentOpenedAttachmentType == "pdf" ||
-      this.currentOpenedAttachmentType == "PDF" ||
-      this.currentOpenedAttachmentType == "Pdf"
+      this.currentOpenedAttachmentType == 'pdf' ||
+      this.currentOpenedAttachmentType == 'PDF' ||
+      this.currentOpenedAttachmentType == 'Pdf'
     ) {
       this.showImageBlock = false;
-      this.currentOpenedAttachment =
-        this.sanitizer.bypassSecurityTrustResourceUrl(
-          this.imageUrl + this.currentOpenedAttachment + '#toolbar=0'
-        );
+      this.currentOpenedAttachment = this.sanitizer.bypassSecurityTrustResourceUrl(
+        this.imageUrl + this.currentOpenedAttachment + '#toolbar=0',
+      );
     } else {
       this.showImageBlock = true;
     }
     this.openModalRef = this.modalService.open(this.medicalAttachmentModal, {
-      size: "xl",
-      windowClass: "modal-holder",
+      size: 'xl',
+      windowClass: 'modal-holder',
       centered: true,
     });
     window.scroll(0, 0);
@@ -1194,14 +1182,18 @@ export class ViewAppointmentComponent implements OnInit {
   showOtherHistory = false;
   changePastHistory(event) {
     let { value, checked } = event.target;
-    if (value == "Other") {
+    if (value == 'Other') {
       this.showOtherHistory = checked;
     }
   }
 
   openCallDetailsModal(modalRef, appt) {
-    this.openModalRef = this.modalService.open(modalRef, { size: 'lg', windowClass: "modal-holder", centered: true });
-    this.callDetails = appt.event || {}
+    this.openModalRef = this.modalService.open(modalRef, {
+      size: 'lg',
+      windowClass: 'modal-holder',
+      centered: true,
+    });
+    this.callDetails = appt.event || {};
   }
 
   copyToClipboard(str) {
@@ -1211,6 +1203,6 @@ export class ViewAppointmentComponent implements OnInit {
     el.select();
     document.execCommand('copy');
     document.body.removeChild(el);
-    this.toaster.success('Copied!')
+    this.toaster.success('Copied!');
   }
 }

@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -13,11 +13,10 @@ import { environment } from 'src/environments/environment';
   standalone: false,
   selector: 'app-view-prescription',
   templateUrl: './view-prescription.component.html',
-  styleUrls: ['./view-prescription.component.scss']
+  styleUrls: ['./view-prescription.component.scss'],
 })
 export class ViewPrescriptionComponent implements OnInit {
-
-  @ViewChild("prescriptionModal") prescriptionModal: ElementRef;
+  @ViewChild('prescriptionModal') prescriptionModal: ElementRef;
 
   imageUrl = environment.imageUrl;
   prescriptionModalData: any;
@@ -30,57 +29,56 @@ export class ViewPrescriptionComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private toaster: ToastrService,
     private modalService: NgbModal,
-  ) { }
+    private cdr: ChangeDetectorRef,
+  ) {}
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   viewPrescription(prescriptionId) {
     this.spinner.show();
-    this.consultationService.getPrescriptionDetails(prescriptionId)
-      .subscribe(
-        (res: any) => {
-          this.spinner.hide();
-          if (res.data) {
-            let { DOB } = res.data.userId
-            if (DOB) {
-              try {
-                let dob = new Date(DOB);
-                let current = new Date();
+    this.consultationService.getPrescriptionDetails(prescriptionId).subscribe(
+      (res: any) => {
+        this.spinner.hide();
+        if (res.data) {
+          let { DOB } = res.data.userId;
+          if (DOB) {
+            try {
+              let dob = new Date(DOB);
+              let current = new Date();
 
-                res.data.userId.DOBYear = current.getFullYear() - dob.getFullYear()
-                res.data.userId.DOBMonth = current.getMonth() - dob.getMonth()
-              } catch (e) { }
-            }
-            this.prescriptionModalData = {
-              data: res.data,
-              prescriptionHtml: this.sanitizer.bypassSecurityTrustHtml(res.prescriptionHtml)
-            };
+              res.data.userId.DOBYear = current.getFullYear() - dob.getFullYear();
+              res.data.userId.DOBMonth = current.getMonth() - dob.getMonth();
+            } catch (e) {}
           }
-        },
-        (err: HttpErrorResponse) => {
-          this.spinner.hide();
-          this.toaster.error(err.error?.message || "Something went wrong!");
+          this.prescriptionModalData = {
+            data: res.data,
+            prescriptionHtml: this.sanitizer.bypassSecurityTrustHtml(res.prescriptionHtml),
+          };
+          this.cdr.markForCheck();
         }
-      );
+      },
+      (err: HttpErrorResponse) => {
+        this.spinner.hide();
+        this.toaster.error(err.error?.message || 'Something went wrong!');
+      },
+    );
 
     this.openModalRef = this.modalService.open(this.prescriptionModal, {
-      size: "xl",
-      windowClass: "modal-holder",
+      size: 'xl',
+      windowClass: 'modal-holder',
       centered: true,
     });
   }
 
   downloadPrescription() {
     let { title, userId } = this.prescriptionModalData.data;
-    let username = "";
+    let username = '';
     if (userId) {
-      username = userId.firstName + " " + userId.lastName;
+      username = userId.firstName + ' ' + userId.lastName;
     }
     this.pdf.downloadPDF(
-      "#presCont",
-      `${title}-${username}-${getFormatedDate(new Date(), "DD-MM-YYYY")}`
+      '#presCont',
+      `${title}-${username}-${getFormatedDate(new Date(), 'DD-MM-YYYY')}`,
     );
   }
-
 }

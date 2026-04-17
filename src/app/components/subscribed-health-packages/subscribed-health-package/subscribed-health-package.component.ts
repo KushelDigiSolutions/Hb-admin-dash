@@ -1,15 +1,26 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbDate, NgbDatepickerNavigateEvent, NgbDateStruct, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbDate,
+  NgbDatepickerNavigateEvent,
+  NgbDateStruct,
+  NgbModal,
+} from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { HealthPackagesService } from 'src/app/core/services/health-packages.service';
 import { PathService } from 'src/app/core/services/path.service';
 import { ToastService } from 'src/app/core/services/toast.service';
 import { ChartType } from 'src/app/pages/chart/apex/apex.model';
 import { environment } from 'src/environments/environment';
-import { calculateAge, getFormatedDate, getTotalDaysInMonth, prependZero, time24to12 } from 'src/app/util/date.util';
+import {
+  calculateAge,
+  getFormatedDate,
+  getTotalDaysInMonth,
+  prependZero,
+  time24to12,
+} from 'src/app/util/date.util';
 import { InsightsChartData } from './components/insights-chart/insights-chart.component';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { AuthenticationService } from 'src/app/core/services/auth.service';
@@ -18,14 +29,10 @@ import { AuthenticationService } from 'src/app/core/services/auth.service';
   standalone: false,
   selector: 'app-subscribed-health-package',
   templateUrl: './subscribed-health-package.component.html',
-  styleUrls: ['./subscribed-health-package.component.scss']
+  styleUrls: ['./subscribed-health-package.component.scss'],
 })
 export class SubscribedHealthPackageComponent implements OnInit {
-
-  breadcrumb = [
-    { label: "Home" },
-    { label: "Subscribed Package", active: true },
-  ];
+  breadcrumb = [{ label: 'Home' }, { label: 'Subscribed Package', active: true }];
   isConsultant: boolean;
   healthPackageBuyId: string;
   data: any;
@@ -50,27 +57,53 @@ export class SubscribedHealthPackageComponent implements OnInit {
       floating: false,
       fontSize: '14px',
       offsetX: 0,
-      offsetY: -10
+      offsetY: -10,
     },
-    responsive: [{
-      breakpoint: 600,
-      options: {
-        chart: {
-          height: 240
+    responsive: [
+      {
+        breakpoint: 600,
+        options: {
+          chart: {
+            height: 240,
+          },
+          legend: {
+            show: false,
+          },
         },
-        legend: {
-          show: false
-        },
-      }
-    }]
+      },
+    ],
   };
 
   activeTab = 'TabUserDetails';
   insightsCharts: InsightsChartData[] = [
-    { title: 'SURVEY', chartData: [{ label: 'Completed', labelValue: 0, value: 0 }, { label: 'Total Surveys', labelValue: 0, value: 0 }] },
-    { title: 'ALERTS', chartData: [{ label: 'Advice Followed', labelValue: 0, value: 0 }, { label: 'Advice Unfollowed', labelValue: 0, value: 0 }] },
-    { title: 'APPOINTMENTS', chartData: [{ label: 'Completed', labelValue: 0, value: 0 }, { label: 'Total Appointments', labelValue: 0, value: 0 }] },
-    { title: 'LAB TESTS', chartData: [{ label: 'Booked', labelValue: 0, value: 0 }, { label: 'Total Tests', labelValue: 0, value: 0 }] },
+    {
+      title: 'SURVEY',
+      chartData: [
+        { label: 'Completed', labelValue: 0, value: 0 },
+        { label: 'Total Surveys', labelValue: 0, value: 0 },
+      ],
+    },
+    {
+      title: 'ALERTS',
+      chartData: [
+        { label: 'Advice Followed', labelValue: 0, value: 0 },
+        { label: 'Advice Unfollowed', labelValue: 0, value: 0 },
+      ],
+    },
+    {
+      title: 'APPOINTMENTS',
+      chartData: [
+        { label: 'Completed', labelValue: 0, value: 0 },
+        { label: 'Total Appointments', labelValue: 0, value: 0 },
+      ],
+    },
+    {
+      title: 'LAB TESTS',
+      chartData: [
+        { label: 'Booked', labelValue: 0, value: 0 },
+        { label: 'Total Tests', labelValue: 0, value: 0 },
+      ],
+    },
   ];
 
   date: NgbDateStruct;
@@ -83,147 +116,158 @@ export class SubscribedHealthPackageComponent implements OnInit {
     public pathService: PathService,
     private spinner: NgxSpinnerService,
     private authService: AuthenticationService,
-  ) { }
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.healthPackageBuyId = this.route.snapshot.params.id;
     this.isConsultant = this.authService.currentUser().role.includes('Consultant');
-    this.setCurrentDate()
-    this.getDetails()
-    this.getNotifications()
+    this.setCurrentDate();
+    this.getDetails();
+    this.getNotifications();
     console.log(this.route, this.router);
-
   }
 
   getDetails() {
-    this.healthPackagesService.getSubscribedPackageDetail(this.healthPackageBuyId).subscribe(res => {
-      let { success, data } = res
-      if (success) {
-
-        let { usedAppointments, totalAppointments, testProducts, createdAt, expirayDate, insights } = data,
-          totalTests = testProducts.length,
-          bookedTests = testProducts.filter(test => test.diagnosticBookingId).length;
+    this.healthPackagesService.getSubscribedPackageDetail(this.healthPackageBuyId).subscribe(
+      (res) => {
+        let { success, data } = res;
+        if (success) {
+          let {
+              usedAppointments,
+              totalAppointments,
+              testProducts,
+              createdAt,
+              expirayDate,
+              insights,
+            } = data,
+            totalTests = testProducts.length,
+            bookedTests = testProducts.filter((test) => test.diagnosticBookingId).length;
 
           data.bookedTests = bookedTests;
 
-        this.insightsCharts[0].chartData[0].value = insights.totalAnswers;
-        this.insightsCharts[0].chartData[1].value = insights.totalSurveyNotifications - insights.totalAnswers;
+          this.insightsCharts[0].chartData[0].value = insights.totalAnswers;
+          this.insightsCharts[0].chartData[1].value =
+            insights.totalSurveyNotifications - insights.totalAnswers;
 
-        this.insightsCharts[0].chartData[0].labelValue = insights.totalAnswers;
-        this.insightsCharts[0].chartData[1].labelValue = insights.totalSurveyNotifications;
+          this.insightsCharts[0].chartData[0].labelValue = insights.totalAnswers;
+          this.insightsCharts[0].chartData[1].labelValue = insights.totalSurveyNotifications;
 
-        this.insightsCharts[1].chartData[0].value = insights.yesAnswers;
-        this.insightsCharts[1].chartData[1].value = insights.noAnswers;
+          this.insightsCharts[1].chartData[0].value = insights.yesAnswers;
+          this.insightsCharts[1].chartData[1].value = insights.noAnswers;
 
-        this.insightsCharts[1].chartData[0].labelValue = insights.yesAnswers;
-        this.insightsCharts[1].chartData[1].labelValue = insights.noAnswers;
+          this.insightsCharts[1].chartData[0].labelValue = insights.yesAnswers;
+          this.insightsCharts[1].chartData[1].labelValue = insights.noAnswers;
 
-        this.insightsCharts[2].chartData[0].value = usedAppointments;
-        this.insightsCharts[2].chartData[1].value = totalAppointments - usedAppointments;
+          this.insightsCharts[2].chartData[0].value = usedAppointments;
+          this.insightsCharts[2].chartData[1].value = totalAppointments - usedAppointments;
 
-        this.insightsCharts[2].chartData[0].labelValue = usedAppointments;
-        this.insightsCharts[2].chartData[1].labelValue = totalAppointments;
+          this.insightsCharts[2].chartData[0].labelValue = usedAppointments;
+          this.insightsCharts[2].chartData[1].labelValue = totalAppointments;
 
-        this.insightsCharts[3].chartData[0].value = bookedTests;
-        this.insightsCharts[3].chartData[1].value = totalTests - bookedTests;
-        this.insightsCharts[3].chartData[0].labelValue = bookedTests;
-        this.insightsCharts[3].chartData[1].labelValue = totalTests;
+          this.insightsCharts[3].chartData[0].value = bookedTests;
+          this.insightsCharts[3].chartData[1].value = totalTests - bookedTests;
+          this.insightsCharts[3].chartData[0].labelValue = bookedTests;
+          this.insightsCharts[3].chartData[1].labelValue = totalTests;
 
-        let startDate = new Date(createdAt).getTime(),
-          endDate = new Date(expirayDate).getTime(),
-          totalTime = endDate - startDate,
-          currentTime = new Date().getTime(),
-          timePassed = endDate - currentTime,
-          expirationProgress = 100 - timePassed / totalTime * 100;
-        console.log({ expirationProgress });
-        if (expirationProgress > 100) expirationProgress = 100;
+          let startDate = new Date(createdAt).getTime(),
+            endDate = new Date(expirayDate).getTime(),
+            totalTime = endDate - startDate,
+            currentTime = new Date().getTime(),
+            timePassed = endDate - currentTime,
+            expirationProgress = 100 - (timePassed / totalTime) * 100;
+          console.log({ expirationProgress });
+          if (expirationProgress > 100) expirationProgress = 100;
 
-        data.expirationProgress = expirationProgress.toFixed(2)
-        this.data = data;
-      }
-    }, (err: HttpErrorResponse) => {
-      if (err.status == 404) {
-        this.router.navigate(['/dashboard'], { replaceUrl: true })
-        this.toast.error('Subscription not found!')
-      } else {
-        this.toast.error(err.error?.message)
-      }
-    });
+          data.expirationProgress = expirationProgress.toFixed(2);
+          this.data = data;
+          this.cdr.markForCheck();
+        }
+      },
+      (err: HttpErrorResponse) => {
+        if (err.status == 404) {
+          this.router.navigate(['/dashboard'], { replaceUrl: true });
+          this.toast.error('Subscription not found!');
+        } else {
+          this.toast.error(err.error?.message);
+        }
+      },
+    );
   }
 
   formatNgbDate(date?: NgbDateStruct) {
-    let { day, month, year } = date || this.date
-    return `${year}-${prependZero(month)}-${prependZero(day)}`
+    let { day, month, year } = date || this.date;
+    return `${year}-${prependZero(month)}-${prependZero(day)}`;
   }
 
   setCurrentDate() {
-    let date = new Date()
+    let date = new Date();
     this.date = {
       year: date.getFullYear(),
       month: date.getMonth() + 1,
-      day: date.getDate()
-    }
+      day: date.getDate(),
+    };
   }
 
   getNotifications(fromDate?: string, toDate?: string) {
-    let date = new Date()
+    let date = new Date();
 
-    date.setDate(1)
+    date.setDate(1);
     fromDate = fromDate || getFormatedDate(date);
 
-    date.setDate(getTotalDaysInMonth(date))
+    date.setDate(getTotalDaysInMonth(date));
     toDate = toDate || getFormatedDate(date);
 
     if (this.notificationsObj[fromDate] && this.notificationsObj[toDate]) return;
 
-    this.spinner.show()
-    this.healthPackagesService.getNotifications(this.healthPackageBuyId, fromDate, toDate).subscribe(res => {
-      this.spinner.hide()
+    this.spinner.show();
+    this.healthPackagesService
+      .getNotifications(this.healthPackageBuyId, fromDate, toDate)
+      .subscribe(
+        (res) => {
+          this.spinner.hide();
 
-      let { success, data } = res
+          let { success, data } = res;
 
-      if (success) {
-        this.notificationsObj = { ...this.notificationsObj, ...data };
-        this.setNotifications()
-      }
-    }, (err: HttpErrorResponse) => {
-      this.spinner.hide()
-
-    })
+          if (success) {
+            this.notificationsObj = { ...this.notificationsObj, ...data };
+            this.setNotifications();
+          }
+        },
+        (err: HttpErrorResponse) => {
+          this.spinner.hide();
+        },
+      );
   }
 
   setNotifications() {
-    let selectedDate = this.formatNgbDate()
-    this.notifications = this.notificationsObj[selectedDate] || []
+    let selectedDate = this.formatNgbDate();
+    this.notifications = this.notificationsObj[selectedDate] || [];
   }
 
   onDateSelect(date) {
     console.log(date);
-    this.setNotifications()
+    this.setNotifications();
   }
 
   onNavigate(event: NgbDatepickerNavigateEvent) {
     console.log(event);
     if (event?.next) {
-      let { month, year } = event.next
-      let fromDate = this.formatNgbDate({ month, year, day: 1 })
-      let toDate = new Date(fromDate)
-      let totalDays = getTotalDaysInMonth(fromDate)
+      let { month, year } = event.next;
+      let fromDate = this.formatNgbDate({ month, year, day: 1 });
+      let toDate = new Date(fromDate);
+      let totalDays = getTotalDaysInMonth(fromDate);
       toDate.setDate(totalDays);
 
-      this.getNotifications(fromDate, getFormatedDate(toDate))
+      this.getNotifications(fromDate, getFormatedDate(toDate));
     }
   }
 
-  onSelectImage(event) {
-
-  }
-  onRemoveImage(e) {
-
-  }
+  onSelectImage(event) {}
+  onRemoveImage(e) {}
 
   calculateAge(date) {
-    return calculateAge(date)
+    return calculateAge(date);
   }
 
   onChangeTab(event) {
@@ -231,6 +275,6 @@ export class SubscribedHealthPackageComponent implements OnInit {
   }
 
   format24to12(time) {
-    return time24to12(time)
+    return time24to12(time);
   }
 }
