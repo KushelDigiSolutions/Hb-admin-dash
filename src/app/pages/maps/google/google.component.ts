@@ -4,7 +4,7 @@ import { Component, OnInit } from '@angular/core';
   standalone: false,
   selector: 'app-google',
   templateUrl: './google.component.html',
-  styleUrls: ['./google.component.scss']
+  styleUrls: ['./google.component.scss'],
 })
 
 /**
@@ -18,7 +18,7 @@ export class GoogleComponent implements OnInit {
   // bread crumb items
   breadCrumbItems: Array<{}>;
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit(): void {
     this.breadCrumbItems = [{ label: 'Maps' }, { label: 'Google Maps', active: true }];
@@ -44,9 +44,6 @@ export class GoogleComponent implements OnInit {
    * Fetches the value of map
    */
   private _fetchData() {
-    this.markers = [
-      { latitude: 52.228973, longitude: 20.728218 }
-    ];
+    this.markers = [{ latitude: 52.228973, longitude: 20.728218 }];
   }
-
 }
