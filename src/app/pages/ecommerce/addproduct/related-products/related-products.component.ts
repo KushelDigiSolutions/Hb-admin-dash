@@ -9,11 +9,12 @@ import { NgOptionHighlightDirective } from '@ng-select/ng-option-highlight';
 import { DropzoneModule } from 'src/app/components/dropzone/dropzone.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef } from '@angular/core';
+import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { UIModule } from '../../../../shared/ui/ui.module';
 import { EcommerceService } from '../../ecommerce.service';
 import { productList } from '../../product.model';
+
 @Component({
   standalone: true,
   imports: [
@@ -52,7 +53,8 @@ export class RelatedProductsComponent implements OnInit {
   @Output() newItemEvent = new EventEmitter<any>();
   constructor(
     private formBuilder : FormBuilder,
-    private apiService: EcommerceService
+    private apiService: EcommerceService,
+    private cdr: ChangeDetectorRef
   ) {
     this.relatedFormGroup = this.formBuilder.group({
       similar: [[],this.formBuilder.array([])],
@@ -61,20 +63,23 @@ export class RelatedProductsComponent implements OnInit {
    }
 
   ngOnInit() {
-    this.getProductList();
+    setTimeout(() => {
+      this.getProductList();
+      this.cdr.detectChanges();
+    }, 500);
   }
 
   getProductList(){
     console.log("Related component - upsell ",this.upsell);
     console.log("Related component - crossSell",this.crossSell);
     let url = 'products/list';
-    if(this.upsell.length){
+    if(this.upsell && this.upsell.length){
       for(let product of this.upsell){
         this.similar.push(product._id);
         this.relatedFormGroup.patchValue({similar: this.similar});
       }
     }
-    if(this.crossSell.length){
+    if(this.crossSell && this.crossSell.length){
       for(let product of this.crossSell){
         this.recommended.push(product._id);
         this.relatedFormGroup.patchValue({recommended: this.recommended});
@@ -85,7 +90,9 @@ export class RelatedProductsComponent implements OnInit {
     .then(async(res:any)=>{
       if(res.data){
         this.productList = res.data;
-             
+        setTimeout(() => {
+          this.cdr.detectChanges();
+        }, 500);
       }
     })
     .catch((err:any)=>{
