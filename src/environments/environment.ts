@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://api.healthybazar.com/api/v2/',   //api url
+  apiUrl: 'https://test.healthybazar.com/api/v2/',   //api url
   // apiUrl: 'http://167.71.235.83:8081/api/v2/',     //dev url
   // apiUrl: 'http://167.71.235.83:8082/api/v2/',     //dev url
   // apiUrl: 'http://35.154.221.175:8082/api/v2/',     //dev url

@@ -8,11 +8,10 @@ import { NgOptionHighlightDirective } from '@ng-select/ng-option-highlight';
 import { DropzoneModule } from 'src/app/components/dropzone/dropzone.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { UIModule } from '../../../shared/ui/ui.module';
 import { productList, productModel } from '../product.model';
-
 @Component({
   standalone: true,
   imports: [
@@ -48,25 +47,16 @@ export class ProductdetailComponent implements OnInit {
   breadCrumbItems: Array<{}>;
   public productDetail: productModel[];
 
-  constructor(
-    private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
-  ) {
-    this.route.params.subscribe(params => {
+  constructor(private route: ActivatedRoute) {
+    this.route.params.subscribe(params =>
       this.productDetail = productList.filter(function (product) {
         return product.id == parseInt(params.id)
-      });
-      setTimeout(() => {
-        this.cdr.detectChanges();
-      }, 500);
-    });
+      })
+    );
   }
 
   ngOnInit() {
     this.breadCrumbItems = [{ label: 'Products' }, { label: 'Product Detail', active: true }];
-    setTimeout(() => {
-      this.cdr.detectChanges();
-    }, 500);
   }
   
   /**
@@ -76,8 +66,6 @@ export class ProductdetailComponent implements OnInit {
   imageShow(event) {
     const image = event.target.src;
     const expandImg = document.getElementById('expandedImg') as HTMLImageElement;
-    if (expandImg) {
-      expandImg.src = image;
-    }
+    expandImg.src = image;
   }
 }

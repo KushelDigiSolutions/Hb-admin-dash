@@ -9,7 +9,7 @@ import { NgOptionHighlightDirective } from '@ng-select/ng-option-highlight';
 import { DropzoneModule } from 'src/app/components/dropzone/dropzone.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { UIModule } from '../../../shared/ui/ui.module';
 import { EcommerceService } from '../ecommerce.service';
@@ -152,8 +152,7 @@ export class AddproductComponent implements OnInit {
     private toaster: ToastrService,
     private modalService: NgbModal,
     private router: Router,
-    private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private route: ActivatedRoute
   ) {
     this.productDetailFormGroup = this.formBuilder.group({
       name: ["", [Validators.required]],
@@ -228,15 +227,12 @@ export class AddproductComponent implements OnInit {
       { label: "Add Product", active: true },
     ];
 
-    setTimeout(() => {
-      this.getBrandList();
-      this.getHealthConcernList();
-      this.getCategoryList();
-      this.getTaxClasses();
-      this.fetchAttributeSet();
-      this.fetchAttributes();
-      this.cdr.detectChanges();
-    }, 500);
+    this.getBrandList();
+    this.getHealthConcernList();
+    this.getCategoryList();
+    this.getTaxClasses();
+    this.fetchAttributeSet();
+    this.fetchAttributes();
   }
 
   getProductDetail() {
@@ -245,9 +241,6 @@ export class AddproductComponent implements OnInit {
         console.log("res", res);
         if (res.data) {
           this.mapDataToFields(res.data);
-          setTimeout(() => {
-            this.cdr.detectChanges();
-          }, 500);
         }
       })
       .catch((err: any) => { });
@@ -258,9 +251,6 @@ export class AddproductComponent implements OnInit {
       .then((res: any) => {
         if (res.data) {
           this.brandList = res.data;
-          setTimeout(() => {
-            this.cdr.detectChanges();
-          }, 500);
         }
       })
       .catch((err: any) => {
@@ -273,9 +263,6 @@ export class AddproductComponent implements OnInit {
       .then((res: any) => {
         if (res.data) {
           this.healthConcernList = res.data;
-          setTimeout(() => {
-            this.cdr.detectChanges();
-          }, 500);
         }
       })
       .catch((err: any) => {
@@ -288,9 +275,6 @@ export class AddproductComponent implements OnInit {
       .then((res: any) => {
         if (res.data) {
           this.categoryList = res.data;
-          setTimeout(() => {
-            this.cdr.detectChanges();
-          }, 500);
         }
       })
       .catch((err: any) => {
@@ -303,9 +287,6 @@ export class AddproductComponent implements OnInit {
       .then((res: any) => {
         if (res.data) {
           this.taxClasses = res.data;
-          setTimeout(() => {
-            this.cdr.detectChanges();
-          }, 500);
         }
       })
       .catch((err: any) => { });
