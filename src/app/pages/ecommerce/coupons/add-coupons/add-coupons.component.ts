@@ -8,7 +8,7 @@ import { NgOptionHighlightDirective } from '@ng-select/ng-option-highlight';
 import { DropzoneModule } from 'src/app/components/dropzone/dropzone.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { UIModule } from '../../../../shared/ui/ui.module';
 import { EcommerceService } from '../../ecommerce.service';
@@ -106,19 +106,15 @@ export class AddCouponsComponent implements OnInit {
     private spinner: NgxSpinnerService,
     private router: Router,
     private route: ActivatedRoute,
-    private calendar: NgbCalendar,
-    private cdr: ChangeDetectorRef
+    private calendar: NgbCalendar
   ) { }
 
   ngOnInit() {
-    setTimeout(() => {
-        this.getCompanyList();
-        this.getBrandList();
-        this.getUserList();
-        this.editId = this.route.snapshot.params.id;
-        if (this.editId) this.fetchCouponDetail();
-        this.cdr.detectChanges();
-    }, 500);
+    this.getCompanyList();
+    this.getBrandList();
+    this.getUserList();
+    this.editId = this.route.snapshot.params.id;
+    if (this.editId) this.fetchCouponDetail();
   }
 
   get f() {
@@ -126,36 +122,22 @@ export class AddCouponsComponent implements OnInit {
   }
 
   getUserList() {
-    this.apiService.getUserListAll().subscribe((res: any) => {
-        setTimeout(() => {
-            this.userList = res.data;
-            this.cdr.detectChanges();
-        });
-    });
+    this.apiService.getUserListAll().subscribe((res: any) => this.userList = res.data);
   }
 
   getBrandList() {
-    this.apiService.getBrandListingAll().subscribe((res: any) => {
-        setTimeout(() => {
-            this.brandData = res.data;
-            this.cdr.detectChanges();
-        });
-    });
+    this.apiService.getBrandListingAll().subscribe((res: any) => this.brandData = res.data);
   }
 
   getCompanyList() {
-    this.corporateService.getCompanyList().subscribe((res: any) => {
-        setTimeout(() => {
-            this.companyList = res.data;
-            this.cdr.detectChanges();
-        });
-    });
+    this.corporateService.getCompanyList().subscribe((res: any) => this.companyList = res.data);
   }
 
   fetchCouponDetail() {
     this.spinner.show();
-    this.apiService.getCouponDetail(this.editId).subscribe({
-      next: (res: any) => {
+    this.apiService.getCouponDetail(this.editId).subscribe(
+      (res: any) => {
+        this.spinner.hide();
         let { data } = res;
         let { validFrom, validTo } = data;
         if (validFrom) validFrom = getFormatedDate(validFrom, 'YYYY-MM-DD');
@@ -185,16 +167,12 @@ export class AddCouponsComponent implements OnInit {
         });
         this.couponTypeChanged(data.couponType);
         this.percentageDiscount = this.form.get("isPercent").value;
-        setTimeout(() => {
-            this.spinner.hide();
-            this.cdr.detectChanges();
-        }, 500);
       },
-      error: () => {
+      () => {
         this.spinner.hide();
         this.router.navigateByUrl("/ecommerce/coupons");
       }
-    });
+    );
   }
 
   couponTypeChanged(event) {
@@ -202,9 +180,6 @@ export class AddCouponsComponent implements OnInit {
     this.brandSpecificCoupon = event == "brandSpecific";
     this.userSpecificTypeCoupon = event == "userTypeSpecific";
     this.show = event !== 'all';
-    setTimeout(() => {
-        this.cdr.detectChanges();
-    });
   }
 
   addCoupon() {
@@ -222,19 +197,13 @@ export class AddCouponsComponent implements OnInit {
     delete value.reusability;
 
     this.spinner.show();
-    (this.editId ? this.apiService.updateCoupon(value) : this.apiService.addCoupon(value)).subscribe({
-        next: (res: any) => {
-            setTimeout(() => {
-                this.spinner.hide();
-                this.toaster.success(res.message);
-                this.router.navigate(["/ecommerce/coupons"]);
-                this.cdr.detectChanges();
-            });
-        }, 
-        error: (err) => {
-            this.spinner.hide();
-            this.toaster.error(err.error?.message || 'Something went wrong!');
-        }
+    (this.editId ? this.apiService.updateCoupon(value) : this.apiService.addCoupon(value)).subscribe((res: any) => {
+      this.spinner.hide();
+      this.toaster.success(res.message);
+      this.router.navigate(["/ecommerce/coupons"]);
+    }, (err) => {
+      this.spinner.hide();
+      this.toaster.error(err.error?.message || 'Something went wrong!');
     });
   }
 

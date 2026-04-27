@@ -1,12 +1,12 @@
 //
 // Form Wizard
 //
-@import "angular-archwizard/styles/archwizard.css";
-@import 'ng-wizard/themes/ng_wizard.min.css';
+@import 'angular-archwizard/styles/archwizard.css';
+@import 'vendor/ng-wizard/ng_wizard.min.css';
 
-@import 'ng-wizard/themes/ng_wizard_theme_arrows.min.css';
-@import 'ng-wizard/themes/ng_wizard_theme_circles.min.css';
-@import 'ng-wizard/themes/ng_wizard_theme_dots.min.css';
+@import 'vendor/ng-wizard/ng_wizard_theme_arrows.min.css';
+@import 'vendor/ng-wizard/ng_wizard_theme_circles.min.css';
+@import 'vendor/ng-wizard/ng_wizard_theme_dots.min.css';
 
 .form-wizard-wrapper {
   label {
@@ -18,7 +18,7 @@
 // ng-wizard style
 
 .ng-wizard-theme-circles {
-  >ul.step-anchor {
+  > ul.step-anchor {
     background-color: $card-bg !important;
 
     &:before {
@@ -36,7 +36,6 @@
 }
 
 .ng-wizard-theme-default {
-
   .step-content,
   .ng-wizard-toolbar,
   ul.step-anchor {
@@ -52,14 +51,14 @@
     li {
       background: $sidebar-bg !important;
 
-      &.done>a {
+      &.done > a {
         border: none !important;
         color: $sidebar-menu-item-color !important;
         background: 0 0 !important;
         cursor: pointer;
       }
 
-      &.active>a {
+      &.active > a {
         color: $primary !important;
       }
     }
@@ -73,11 +72,11 @@
 }
 
 .ng-wizard-theme-arrows {
-  >ul.step-anchor {
+  > ul.step-anchor {
     background: $sidebar-bg !important;
 
-    >li {
-      >a {
+    > li {
+      > a {
         background: $sidebar-bg !important;
       }
     }
@@ -85,11 +84,10 @@
 }
 
 .ng-wizard-theme-circles {
-  >ul.step-anchor {
-    >li {
-
+  > ul.step-anchor {
+    > li {
       &.active {
-        >a {
+        > a {
           border-color: $primary !important;
           color: $white;
           background: $primary !important;
@@ -100,7 +98,7 @@
         }
       }
 
-      >a,
+      > a,
       a:hover,
       a:focus {
         border-color: $primary;

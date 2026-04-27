@@ -8,7 +8,7 @@ import { NgOptionHighlightDirective } from '@ng-select/ng-option-highlight';
 import { DropzoneModule } from 'src/app/components/dropzone/dropzone.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { UIModule } from '../../../../shared/ui/ui.module';
 import { EcommerceService } from '../../ecommerce.service';
@@ -16,7 +16,6 @@ import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../../../environments/environment';
 import { Observable, of, firstValueFrom } from 'rxjs';
 import * as ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-
 @Component({
   standalone: true,
   imports: [
@@ -60,8 +59,7 @@ export class AddCategoryComponent implements OnInit {
     private apiService: EcommerceService,
     private route: ActivatedRoute,
     private spinner: NgxSpinnerService,
-    private router: Router,
-    private cdr: ChangeDetectorRef
+    private router: Router
   ) {
     this.form = this.formBuilder.group({
       image: [[], [Validators.required]],
@@ -76,31 +74,25 @@ export class AddCategoryComponent implements OnInit {
 
   ngOnInit() {
     this.editId = this.route.snapshot.params.id;
-    setTimeout(() => {
-      if (this.editId) {
-        this.fetchCategory();
-      }
-      this.getParentCategories();
-      this.cdr.detectChanges();
-    }, 500);
+    if (this.editId) {
+      this.fetchCategory();
+    }
+    this.getParentCategories();
   }
 
   fetchCategory() {
     this.spinner.show();
     this.apiService.getCategory(this.editId).subscribe(res => {
+      this.spinner.hide();
       let { data } = res;
       this.oldFiles = typeof data.image == 'object' ? [data.image] : [];
       this.form.patchValue({
-        image: this.oldFiles[0]?.savedName,
+        image: this.oldFiles[0].savedName,
         name: data.name,
         description: data.description,
         metaTitle: data.metaTitle,
         metaDescription: data.metaDescription,
-      });
-      setTimeout(() => {
-        this.spinner.hide();
-        this.cdr.detectChanges();
-      }, 500);
+      })
     }, err => {
       this.spinner.hide();
       this.router.navigateByUrl('/ecommerce/category');
@@ -112,9 +104,6 @@ export class AddCategoryComponent implements OnInit {
     .then((res:any)=>{
       if(res.data){
         this.categoriesList = res.data.categories;
-        setTimeout(() => {
-          this.cdr.detectChanges();
-        }, 500);
       }
     })
     .catch((err:any)=>{})
@@ -175,6 +164,7 @@ export class AddCategoryComponent implements OnInit {
     this.spinner.show();
     uploadReq.subscribe(res => {
       value.image = res.data[0]
+      this.apiService.addCategory(value)
       if (this.editId) {
         value._id = this.editId;
       }
@@ -191,4 +181,6 @@ export class AddCategoryComponent implements OnInit {
       this.spinner.hide();
     })
   }
+
+
 }

@@ -9,7 +9,7 @@ import { NgOptionHighlightDirective } from '@ng-select/ng-option-highlight';
 import { DropzoneModule } from 'src/app/components/dropzone/dropzone.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { NO_ERRORS_SCHEMA, CUSTOM_ELEMENTS_SCHEMA, Component, OnInit, OnDestroy, ViewChild, ViewChildren, QueryList, Input, Output, EventEmitter, ViewEncapsulation, AfterViewInit, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { UIModule } from '../../../../shared/ui/ui.module';
 import { EcommerceService } from '../../ecommerce.service';
@@ -17,7 +17,6 @@ import { TransactionService } from '../../orders/transaction.service';
 import { Transaction } from '../../orders/transaction';
 import { NgbdSortableHeader } from '../../sortable-directive';
 import { Observable, firstValueFrom } from 'rxjs';
-
 @Component({
   standalone: true,
   imports: [
@@ -58,8 +57,7 @@ export class RelatedBlogsComponent implements OnInit {
   @ViewChildren(NgbdSortableHeader) headers: QueryList<NgbdSortableHeader>;
   constructor(
     public service: TransactionService,
-    private apiService: EcommerceService,
-    private cdr: ChangeDetectorRef
+    private apiService: EcommerceService
   ) {
     this.transactions$ = service.transactions$;
     this.total$ = service.total$;
@@ -67,10 +65,7 @@ export class RelatedBlogsComponent implements OnInit {
 
   ngOnInit(){
     console.log("blgs",this.blogs);
-    setTimeout(() => {
-      this.getBlogs();
-      this.cdr.detectChanges();
-    }, 500);
+    this.getBlogs();
   }
 
   getBlogs(){
@@ -91,9 +86,6 @@ export class RelatedBlogsComponent implements OnInit {
           }
 
         }
-        setTimeout(() => {
-          this.cdr.detectChanges();
-        }, 500);
       }
     })
     .catch((err:any)=>{
